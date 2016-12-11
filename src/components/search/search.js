@@ -1,85 +1,86 @@
 import React, { Component } from 'react';
+import { connect } from 'react-redux'
+import { addArtist, searchArtists } from './search-actions'
+
+
 import './search.css';
-import debounce from '../../functions/debounce/debounce';
+//import debounce from '../../functions/debounce/debounce';
 
-class Search extends Component {
-  state = {
-    query:'',
-    results:[]
-  }
+let search = ({artists = [], addArtist, searchArtists }) => {
 
-  changed(event){
-    let query = event.target.value;
+  let input;
 
-    this.setState({query})
-    if(query.length === ''){
-      this.setState({'results':[]})
-    }
+  return (
+    <div className="search">
+      <form onSubmit={e => {
+        e.preventDefault()
+        if (!input.value.trim()) {
+          return
+        }
+        searchArtists(input.value);
+      }}>
 
-    if(query.length >= 3){
-      debounce(function(){
-        this.searchArtists(query).then(function(results){
-          this.setState({results})
-        }.bind(this))
-      }.bind(this), 200)();
-    }
-  }
-
-  searchArtists(query){
-    return new Promise(function(resolve, reject){
-
-      query = query.replace(' ', '+')
-
-      const base =  'http://musicbrainz.org/ws/2/artist/?query=artist:'
-      const end = '&fmt=json';
-      let url = base + query + end;
-
-      fetch(url).then(function(response){
-        return response.json();
-      }).then(function(results){
-        resolve(results.artists);
-      })
-    })
-  }
-
-  selected(id){
-    this.props.action(id)
-  }
-
-  artistRows(){
-    return this.state.results
-    .sort(function(artistA, artistB){
-      return Number(artistA.score) - Number(artistB.score)
-    })
-    .reverse()
-    .map(function(artist){
-
-      let style = {
-        fontSize: artist.score / 2
-      }
-
-      return (
-        <li className="results__row" key={artist.id}>
-          <button onClick={this.selected.bind(this, artist.id)} style={style}>{artist.name}</button>
-        </li>
-      )
-    }.bind(this));
-  }
-
-  render() {
-    return (
-      <div className="search">
         <label className="search__label">
           <span>Search</span>
-          <input onChange={this.changed.bind(this)} className="search__input" type="text" />
+
+          <input
+          className="search__input"
+          type="text"
+          ref={node => {
+            input = node
+          }} />
         </label>
-        <ul className="results">
-          {this.artistRows()}
-        </ul>
-      </div>
-    )
+
+        <button type="submit">
+          Search
+        </button>
+      </form>
+
+      <ul className="results">
+        {artists
+          .sort(function(artistA, artistB){
+            return Number(artistA.score) - Number(artistB.score)
+          })
+          .reverse()
+          .map(artist => {
+
+            let style = {
+              fontSize: artist.score / 2
+            }
+
+            return (
+              <li className="results__row" key={artist.id}>
+                <button onClick={() => addArtist(artist.id)} style={style}>{artist.name}</button>
+              </li>
+            )
+          }
+        )}
+      </ul>
+    </div>
+  )
+}
+
+const mapStateToProps = (state) => {
+  return {
+    artists: state.searchedArtists
   }
 }
+
+const mapDispatchToProps = (dispatch) => {
+  return {
+    addArtist: (id) => {
+      dispatch(addArtist(id))
+    },
+    searchArtists: (query) => {
+      dispatch(searchArtists(query))
+    }
+  }
+}
+
+const Search = connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(search)
 
 export default Search;
 

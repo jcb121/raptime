@@ -1,56 +1,70 @@
 import React, { Component } from 'react';
-//import Measure from 'react-measure';
+import { connect } from 'react-redux'
+import { } from './timeline-actions'
+
+
 import Artists from './artists/artists';
-import './timeline.css';
 import Background from './background/background';
 
-class TimeLine extends Component {
+import './timeline.css';
 
-  timelineRange(artists){
-    let end;
-    let start;
+let timeline = ({ artists = [] }) => {
 
-    artists.forEach(function(artist){
+  console.log('timeline', artists);
 
-      let artistEnd = artist['life-span'].end;
-      let artistStart = artist['life-span'].start;
+  let meta = timelineRange(artists);
 
-      //initial;
-      end = end ? end : artistEnd;
-      start = start ? start : artistStart;
-      //only larger;
-      start = start < artistStart ? start: artistStart;
-      end = end > artistEnd ? end: artistEnd;
-    })
+  return (
+    <div className="timeline">
+      <Background range={meta.range} ></Background>
+      <Artists range={meta.range} artists={artists}></Artists>
+    </div>
+  )
+}
 
-    let range = [];
-    for(let i = Number(start) - 1; i <= Number(end) + 1; i++){
-      range.push(i);
-    }
+function timelineRange(artists){
+  let end;
+  let start;
 
-    return {
-      end,
-      start,
-      range
-    };
+  artists.forEach(function(artist){
+
+    let artistEnd = artist['life-span'].end;
+    let artistStart = artist['life-span'].start;
+
+    //initial;
+    end = end ? end : artistEnd;
+    start = start ? start : artistStart;
+    //only larger;
+    start = start < artistStart ? start: artistStart;
+    end = end > artistEnd ? end: artistEnd;
+  })
+
+  let range = [];
+  for(let i = Number(start) - 1; i <= Number(end) + 1; i++){
+    range.push(i);
   }
 
-  render() {
+  return {
+    end,
+    start,
+    range
+  };
+}
 
-    let meta = this.timelineRange(this.props.artists.results);
-    let artists = this.props.artists.results;
 
-    return (
-      <div className="timeline">
-        <Background range={meta.range} ></Background>
-        <Artists range={meta.range} artists={artists}></Artists>
-      </div>
-    )
+const mapStateToProps = (state) => {
+  return {
+    artists: state.timelineArtists
   }
 }
 
+const mapDispatchToProps = (dispatch) => {
+  return {}
+}
+
+const TimeLine = connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(timeline)
+
 export default TimeLine;
-
-
-/*
-*/
