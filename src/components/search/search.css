@@ -1,0 +1,24 @@
+.results{
+  //display: flex;
+  //flex-direction: row;
+  //flex-wrap: wrap;
+
+  margin:0;
+  padding:0;
+}
+.results__row{
+  //list-style: none;
+  padding:8px;
+}
+
+.search{
+
+}
+
+.search__label{
+
+}
+
+.search__input{
+
+}
